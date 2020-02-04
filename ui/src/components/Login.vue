@@ -32,7 +32,7 @@ const getLoginUrl = () => {
   let loginUrl = host.slice(1)
   loginUrl.unshift('login')
 
-  return loginUrl.join('.') + (window.location.port ? ':' + window.location.port : '')
+  return 'https://' + loginUrl.join('.') + (window.location.port ? ':' + window.location.port : '')
     + '/auth/login?ledgerId=' + ledgerId;
 }
 
