@@ -10,7 +10,6 @@ ui := target/dablchat-ui-$(ui_version).zip
 package: $(dar) $(ui)
 	# cd target && zip o-beer.zip * && rm o-beer*
 
-
 $(dar):
 	daml build
 	mkdir -p $(@D)
@@ -32,6 +31,16 @@ $(ui):
 	cd ui; zip -r o-beer-ui-$(ui_version).zip dist/
 	cd ui; mkdir -p ../$(@D)
 	cd ui; mv o-beer-ui-$(ui_version).zip ../$@
+	cd ui; rm -r dist
+
+.PHONY: ui-dev
+ui-dev:
+	yarn --cwd ui/ install
+	yarn --cwd ui/ build-dev
+	#this is gross
+	cd ui; zip -r o-beer-ui-$(ui_version).zip dist/
+	# cd ui; mkdir -p ../$(@D)
+	cd ui; mv o-beer-ui-$(ui_version).zip ../target
 	cd ui; rm -r dist
 
 .PHONY: clean

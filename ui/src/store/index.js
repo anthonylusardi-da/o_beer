@@ -3,6 +3,7 @@ import Vuex from 'vuex';
 import jwt from "jsonwebtoken";
 import axios from "axios";
 import createPersistedState from "vuex-persistedstate";
+import router from '../router';
 
 Vue.use(Vuex);
 
@@ -26,8 +27,10 @@ export default new Vuex.Store({
   plugins: [createPersistedState({
     paths:['party', 'ledger']
   })],
+  router,
   state: {
     party : null,
+    token : null,
     beersOwed: null,
     beerProposals: null,
     ledger: axios.create(
@@ -41,19 +44,21 @@ export default new Vuex.Store({
     )
   },
   mutations: {
-    loginParty(state, {party, authHeader}){
-      state.party = party
-      state.ledger.defaults.headers.common['Authorization'] = authHeader
+    loginParty(state, {party, token}){
+      state.party = party;
+      state.token = token;
+      state.ledger.defaults.headers.common['Authorization'] = 'Bearer ' + token;
     },
     logoutParty (state) {
       // There must be a better way to do this
-      state.party = null
-      state.ledger.defaults.headers.common['Authorization'] = "" // delete instead?
-      state.beers = null
-      state.beerProposals = null
+      state.party = null;
+      state.token = null;
+      state.ledger.defaults.headers.common['Authorization'] = ""; // delete instead?
+      state.beers = null;
+      state.beerProposals = null;
     },
     updateBeersOwed(state, beersOwed) {
-      state.beersOwed = beersOwed
+      state.beersOwed = beersOwed;
     },
     updateBeerProposals(state, beerProposals) {
       state.beerProposals = beerProposals;
@@ -61,11 +66,17 @@ export default new Vuex.Store({
   },
   actions: {
     async updateParty ({commit, state}, party) {
-      var payload = {"ledgerId": "o_beer", "applicationId": "HTTP-JSON-API-Gateway", "party": party};
-      var jwtAuth = jwt.sign(payload, 'secret');
-      var authHeader = "Bearer " + jwtAuth;
-
-      commit('loginParty', {party, authHeader});
+      if (window.location.hostname == 'localhost'){
+        var payload = {"ledgerId": "o_beer", "applicationId": "HTTP-JSON-API-Gateway", "party": party};
+        var token = jwt.sign(payload, 'secret');
+        commit('loginParty', {party, token});
+      }
+      else
+      {
+        party = this.$router.query.party || state.party;
+        var token = this.$router.query.token || state.token;
+        commit('loginParty', {party, token});
+      }
     },
     async getBeersOwed ({commit, state}) {
       var query = {

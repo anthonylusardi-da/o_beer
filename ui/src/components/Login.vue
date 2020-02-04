@@ -5,11 +5,11 @@
         <b-input-group>
           <b-form-input v-model="newParty"></b-form-input>
           <b-input-group-append>
-            <router-link to="/">
+            <a :href='loginUrl'>
               <b-button variant="primary" v-on:click.once="updateParty">
                 Login
               </b-button>
-            </router-link>
+            </a>
           </b-input-group-append>
         </b-input-group>
       </b-col>
@@ -20,12 +20,29 @@
 <script>
 import store from "../store";
 import { mapState } from 'vuex'
+
+const getLoginUrl = () => {
+
+  if (window.location.hostname == 'localhost'){
+    return '/'
+  }
+
+  let host = window.location.host.split('.');
+  const ledgerId = host[0];
+  let loginUrl = host.slice(1)
+  loginUrl.unshift('login')
+
+  return loginUrl.join('.') + (window.location.port ? ':' + window.location.port : '')
+    + '/auth/login?ledgerId=' + ledgerId;
+}
+
 export default {
 	name: 'login',
   store,
   data () {
     return {
-      newParty: null
+      newParty: null,
+      loginUrl: getLoginUrl()
     }
   },
   computed: {
